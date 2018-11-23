@@ -2,22 +2,21 @@ using System;
 using UnityEngine;
 
 public class OrbitCamera : MonoBehaviour {
-    public float Distance = 8.0f;
-
-    public bool IsControlable = true;
-    private float rotationXAxis;
-
-    private float rotationYAxis;
+    public bool IsControllable = true;
 
     public Transform Target;
 
+    public float Distance = 8.0f;
     public float XSpeed = 900.0f;
     public float YSpeed = 900.0f;
     public float YMax = 80;
     public float YMin = -80;
 
+    private float rotationXAxis;
+    private float rotationYAxis;
+
     public void SetControllable(bool value) {
-        IsControlable = value;
+        IsControllable = value;
     }
 
     private void Start() {
@@ -30,7 +29,7 @@ public class OrbitCamera : MonoBehaviour {
         var velocityX = 0f;
         var velocityY = 0f;
 
-        if (IsControlable) {
+        if (IsControllable) {
             velocityX = XSpeed * Input.GetAxis("Mouse X") * 0.02f;
             velocityY = YSpeed * Input.GetAxis("Mouse Y") * 0.02f;
         }
@@ -46,9 +45,7 @@ public class OrbitCamera : MonoBehaviour {
         var negDistance = new Vector3(0.0f, 0.0f, -Distance);
         var position = rotation * negDistance + Target.position;
 
-        var castPoint = CameraRaycast(position);
-
-//        transform.position = castPoint ?? position;
+        var castPoint = RaycastCamera(position);
 
         transform.position = castPoint;
         transform.rotation = rotation;
@@ -62,12 +59,9 @@ public class OrbitCamera : MonoBehaviour {
         return Mathf.Clamp(angle, min, max);
     }
 
-    private Vector3 CameraRaycast(Vector3 currentPosition) {
+    // Updates camera position to avoid clipping through the ground
+    private Vector3 RaycastCamera(Vector3 currentPosition) {
         var dir = currentPosition - Target.gameObject.transform.position;
-        if (Physics.Raycast(Target.transform.position, dir, out var hit, 10f)) {
-            return hit.point;
-        }
-
-        return currentPosition;
+        return Physics.Raycast(Target.transform.position, dir, out var hit, 10f) ? hit.point : currentPosition;
     }
 }
